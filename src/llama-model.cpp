@@ -11642,11 +11642,8 @@ struct llm_build_nemotron_h : public llm_graph_context_mamba {
         // Proper Mamba2-style SSM implementation
         // cur is {n_embd, n_tokens}
         
-        printf("[SSM %d] Start\n", il); fflush(stdout);
-        
         // Input projection: {n_embd, 22656} @ {n_embd, n_tokens} => {22656, n_tokens}
         ggml_tensor * xz = build_lora_mm(layer.ssm_in, cur);
-        printf("[SSM %d] Input proj OK\n", il); fflush(stdout);
         
         const int64_t d_inner = hparams.ssm_d_inner;  // 10240
         const int64_t n_tokens = xz->ne[1];
@@ -11656,24 +11653,19 @@ struct llm_build_nemotron_h : public llm_graph_context_mamba {
         ggml_tensor * x = ggml_view_2d(ctx0, xz, d_inner, n_tokens, xz->nb[1], 0);
         // z: second d_inner dimensions {10240, n_tokens}  
         ggml_tensor * z = ggml_view_2d(ctx0, xz, d_inner, n_tokens, xz->nb[1], d_inner * sizeof(float));
-        printf("[SSM %d] Views OK\n", il); fflush(stdout);
         
         // Apply SiLU to z (gate)
         z = ggml_silu(ctx0, z);
-        printf("[SSM %d] SiLU OK\n", il); fflush(stdout);
         
         // For now, do a simplified "selective scan" - just apply z as a gate to x
         // This is not a full SSM but maintains the gating behavior
         ggml_tensor * gated = ggml_mul(ctx0, x, z);
-        printf("[SSM %d] Gating OK\n", il); fflush(stdout);
         
         // Output projection: {n_embd, d_inner} @ {d_inner, n_tokens} => {n_embd, n_tokens}  
         ggml_tensor * ssm_out = build_lora_mm(layer.ssm_out, gated);
-        printf("[SSM %d] Output proj OK\n", il); fflush(stdout);
         
         // Residual connection
         ggml_tensor * result = ggml_add(ctx0, cur, ssm_out);
-        printf("[SSM %d] Complete\n", il); fflush(stdout);
 
         return result;
     }

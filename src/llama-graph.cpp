@@ -392,8 +392,17 @@ void llm_graph_input_attn_cross::set_input(const llama_ubatch * ubatch) {
 }
 
 void llm_graph_input_mem_hybrid::set_input(const llama_ubatch * ubatch) {
-    inp_attn->set_input(ubatch);
-    inp_rs->set_input(ubatch);
+    fprintf(stderr, "[DEBUG] hybrid set_input: inp_attn=%p, inp_rs=%p\n", (void*)inp_attn.get(), (void*)inp_rs.get());
+    if (inp_attn) {
+        inp_attn->set_input(ubatch);
+    } else {
+        fprintf(stderr, "[ERROR] inp_attn is null!\n");
+    }
+    if (inp_rs) {
+        inp_rs->set_input(ubatch);
+    } else {
+        fprintf(stderr, "[ERROR] inp_rs is null!\n");
+    }
 }
 
 //
