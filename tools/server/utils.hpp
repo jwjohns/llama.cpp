@@ -437,8 +437,11 @@ template <class Iter>
 static std::string tokens_to_str(llama_context * ctx, Iter begin, Iter end) {
     std::string ret;
     for (; begin != end; ++begin) {
-        ret += common_token_to_piece(ctx, *begin);
+        std::string piece = common_token_to_piece(ctx, *begin);
+        LOG_DBG("tokens_to_str: token_id=%d -> piece='%s' (length=%zu)", *begin, piece.c_str(), piece.length());
+        ret += piece;
     }
+    LOG_DBG("tokens_to_str: final_string='%s' (length=%zu)", ret.c_str(), ret.length());
 
     return ret;
 }

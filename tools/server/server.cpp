@@ -3662,6 +3662,7 @@ struct server_context {
                 completion_token_output result;
                 result.tok          = id;
                 result.text_to_send = common_token_to_piece(ctx, result.tok, accept_special_token(slot, result.tok));
+                SLT_DBG(slot, "detokenize: token_id=%d -> text='%s' (length=%zu)", result.tok, result.text_to_send.c_str(), result.text_to_send.length());
                 result.prob         = 1.0f; // TODO: set it here instead of doing inside populate_token_probs
 
                 if (slot.params.sampling.n_probs > 0) {
@@ -3817,7 +3818,7 @@ inline void signal_handler(int signal) {
     if (is_terminating.test_and_set()) {
         // in case it hangs, we can force terminate the server by hitting Ctrl+C twice
         // this is for better developer experience, we can remove when the server is stable enough
-        fprintf(stderr, "Received second interrupt, terminating immediately.\n");
+        SRV_WRN("received second interrupt, terminating immediately");
         exit(1);
     }
 
